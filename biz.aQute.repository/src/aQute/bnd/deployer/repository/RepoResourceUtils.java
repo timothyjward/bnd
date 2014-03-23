@@ -11,6 +11,7 @@ import org.osgi.service.log.*;
 import org.osgi.service.repository.*;
 
 import aQute.bnd.deployer.repository.api.*;
+import aQute.bnd.deployer.repository.providers.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
@@ -30,7 +31,24 @@ public final class RepoResourceUtils {
 		// Find a compatible content provider for the input
 		IRepositoryContentProvider selectedProvider = null;
 		IRepositoryContentProvider maybeSelectedProvider = null;
-		for (IRepositoryContentProvider provider : contentProviders) {
+		
+		/**
+		 * This is NOT a fix, but rather shows the problem in the code. The code seems to assume a fixed order in the contentProviders collection, 
+		 * but the type of contentProviders is simply "Collection", not "List", "SortedSet" or something like that. Java 8 somehow gives a different order for contentProviders than Java 6 and 7. This is 
+		 * annoying, but the code shouldn't make any assumptions on order.
+		 */
+		SortedSet<IRepositoryContentProvider> sortedContentProviders = new TreeSet<IRepositoryContentProvider>(new Comparator<IRepositoryContentProvider>() {
+			public int compare(IRepositoryContentProvider repo1, IRepositoryContentProvider repo2) {
+				if(repo1 instanceof R5RepoContentProvider) {
+					return 1;
+				}
+				
+				return -1;
+			}});
+		
+		sortedContentProviders.addAll(contentProviders);
+		
+		for (IRepositoryContentProvider provider : sortedContentProviders) {
 			CheckResult checkResult;
 			try {
 				bufferedStream.mark(READ_AHEAD_MAX);

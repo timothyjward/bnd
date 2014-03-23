@@ -53,7 +53,15 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	
 	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
-	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new HashMap<String,IRepositoryContentProvider>(5);
+	
+	/**
+	 * Sorting the Contentproviders here does the trick too. Still, this is fixing the symptom.
+	 */
+	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new TreeMap<String,IRepositoryContentProvider>(new Comparator<String>() {
+
+		public int compare(String str1, String str2) {
+			return str1.compareTo(str2);
+		}});
 	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
 
 	protected Registry											registry;
