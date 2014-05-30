@@ -54,7 +54,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	
 	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
-	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new HashMap<String,IRepositoryContentProvider>(5);
+	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new LinkedHashMap<String,IRepositoryContentProvider>(5);
 	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
 
 	protected Registry											registry;
@@ -75,8 +75,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	private boolean online = true;
 
 	protected AbstractIndexedRepo() {
-		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
 		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider(obrIndexer));
+		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
+
 
 		generatingProviders.add(allContentProviders.get(REPO_TYPE_R5));
 	}
@@ -160,7 +161,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 						try {
 							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
 							indexHandle.setReporter(reporter);
-							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), allContentProviders.values(), this, logService);
+							
+							List<IRepositoryContentProvider> providers = mapProvidersToList();
+							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), providers, this, logService);
 						}
 						catch (Exception e) {
 							warning("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, parentUri, e);
@@ -173,7 +176,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				}
 
 			};
-
+			
 			// Parse the indexes
 			for (URI indexLocation : indexLocations) {
 				try {
@@ -192,7 +195,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
-					readIndex(indexFile.getName(), indexLocation, indexStream, allContentProviders.values(), processor, logService);
+					List<IRepositoryContentProvider> providers = mapProvidersToList();
+					readIndex(indexFile.getName(), indexLocation, indexStream, providers, processor, logService);
 				}
 				catch (Exception e) {
 					error("Unable to read index at URL '%s': %s", indexLocation, e);
@@ -201,6 +205,14 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 			initialised = true;
 		}
+	}
+	
+	private List<IRepositoryContentProvider> mapProvidersToList() {
+		List<IRepositoryContentProvider> providers = new ArrayList<IRepositoryContentProvider>();
+		for(String providerKey : allContentProviders.keySet()) {
+			providers.add(allContentProviders.get(providerKey));
+		}
+		return providers;
 	}
 
 	public final List<URI> getIndexLocations() throws Exception {

@@ -19,7 +19,7 @@ public final class RepoResourceUtils {
 	
 	private static final int									READ_AHEAD_MAX					= 5 * 1024 * 1024;
 
-	public static void readIndex(String name, URI baseUri, InputStream stream, Collection<IRepositoryContentProvider> contentProviders, IRepositoryIndexProcessor listener, LogService log) throws Exception {
+	public static void readIndex(String name, URI baseUri, InputStream stream, List<IRepositoryContentProvider> contentProviders, IRepositoryIndexProcessor listener, LogService log) throws Exception {
 		// Make sure we have a buffering stream
 		InputStream bufferedStream;
 		if (stream.markSupported())
