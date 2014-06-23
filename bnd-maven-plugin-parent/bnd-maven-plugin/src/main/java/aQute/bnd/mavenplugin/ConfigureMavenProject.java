@@ -137,7 +137,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 			}
 
 			getLog().info("[bnd] classpath " + classpath);
-			project.setResolvedArtifacts(classpath);
+			project.getArtifacts().addAll(classpath);
 		} catch (MojoExecutionException mjee) {
 			throw mjee;
 		} catch (MojoFailureException mfe) {
