@@ -35,7 +35,7 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 /**
- * Exports project dependencies to OSGi R5 index format.
+ * Baseline a project against a previous version
  */
 @Mojo(name = "baseline", defaultPhase = VERIFY)
 public class BaselineMojo extends AbstractMojo {
