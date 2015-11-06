@@ -20,6 +20,7 @@
 		<module>bnd-maven-plugin</module>
 		<module>bnd-indexer-maven-plugin</module>
 		<module>bnd-baseline-maven-plugin</module>
+		<module>bnd-test-maven-plugin</module>
 	</modules>
 
 	<url>http://bnd.bndtools.org/</url>
@@ -97,6 +98,21 @@
 			<dependency>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>biz.aQute.bndlib</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>biz.aQute.launcher</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>biz.aQute.repository</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>biz.aQute.tester</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

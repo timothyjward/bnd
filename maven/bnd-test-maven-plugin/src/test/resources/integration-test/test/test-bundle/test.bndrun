@@ -1,0 +1,7 @@
+-standalone: src/test/resources/test-repository/index.xml;name=test-dependencies
+
+Test-Cases:${classes;annotated;org.junit.runner.RunWith}
+-runbundles: \
+	${project.artifact.file};version=file
+	javax.servlet-api,\
+	junit
