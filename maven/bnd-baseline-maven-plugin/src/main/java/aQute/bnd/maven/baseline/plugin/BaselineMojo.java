@@ -5,6 +5,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 import java.io.IOException;
 import java.util.Formatter;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 
 import org.apache.maven.RepositoryUtils;
@@ -27,6 +28,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.version.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,9 +137,13 @@ public class BaselineMojo extends AbstractMojo {
 		if (includeDistributionManagement) {
 			RemoteRepository releaseDistroRepo;
 			if (artifact.isSnapshot()) {
+				// We copy the project so that we can change its version to a
+				// release version. This is vital to make sure we don't get the
+				// snapshot deployment repo from the subsequent call to
+				// getDistributionManagementArtifactRepository();
 				MavenProject tmpClone = project.clone();
-				org.apache.maven.artifact.Artifact tmpArtifact = project.getArtifact();
-				tmpClone.setArtifact(tmpArtifact);
+				org.apache.maven.artifact.Artifact tmpArtifact = tmpClone.getArtifact();
+				tmpArtifact.setVersion("1.0.0");
 				releaseDistroRepo = RepositoryUtils.toRepo(tmpClone.getDistributionManagementArtifactRepository());
 			} else {
 				releaseDistroRepo = RepositoryUtils.toRepo(project.getDistributionManagementArtifactRepository());
@@ -187,9 +193,19 @@ public class BaselineMojo extends AbstractMojo {
 
 		VersionRangeResult versions = system.resolveVersionRange(session, request);
 
-		logger.debug("Found versions {}", versions.getVersions());
+		List<Version> found = versions.getVersions();
 
-		base.setVersion(versions.getHighestVersion() != null ? versions.getHighestVersion().toString() : null);
+		logger.debug("Found versions {}", found);
+
+		ListIterator<Version> listIterator = found.listIterator(found.size());
+		while (listIterator.hasPrevious()) {
+			Version tmp = listIterator.previous();
+			toFind.setVersion(tmp.toString());
+			if (!toFind.isSnapshot()) {
+				base.setVersion(toFind.getBaseVersion());
+				break;
+			}
+		}
 
 		logger.info("The baseline version was found to be {}", base.getVersion());
 	}
